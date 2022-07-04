@@ -8,5 +8,5 @@ struct message{
 extern struct message msg_que[1024];
 extern void post_message(int type);
 extern void sys_get_message(struct message *msg);
-#define MSG_MOUSE_CLICK 1
+
 #endif

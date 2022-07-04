@@ -35,6 +35,7 @@ lib/lib.a(setsid.o)           init/main.o (setsid)
 lib/lib.a(execve.o)           init/main.o (execve)
 lib/lib.a(wait.o)             init/main.o (wait)
 lib/lib.a(string.o)           kernel/kernel.o (strcpy)
+lib/lib.a(malloc.o)           kernel/kernel.o (malloc)
 
 分配公共符号
 公共符号            大小              文件
@@ -42,6 +43,8 @@ lib/lib.a(string.o)           kernel/kernel.o (strcpy)
 errno               0x4               lib/lib.a(errno.o)
 hash_table          0x4cc             fs/fs.o
 ___strtok           0x4               lib/lib.a(string.o)
+msg_que             0x2000            kernel/kernel.o
+message             0x8               kernel/kernel.o
 rd_start            0x4               kernel/blk_drv/blk_drv.a(ramdisk.o)
 request             0x480             kernel/blk_drv/blk_drv.a(ll_rw_blk.o)
 user_stack          0x1000            kernel/kernel.o
@@ -100,6 +103,8 @@ Discarded input sections
                 0x0000000000000000        0x0 lib/lib.a(wait.o)
  .note.GNU-stack
                 0x0000000000000000        0x0 lib/lib.a(string.o)
+ .note.GNU-stack
+                0x0000000000000000        0x0 lib/lib.a(malloc.o)
 
 内存配置
 
@@ -204,7 +209,7 @@ LOAD lib/lib.a
  *(.iplt)
  .iplt          0x0000000000000000        0x0 boot/head.o
 
-.text           0x0000000000000000    0x192d9
+.text           0x0000000000000000    0x197c9
  *(.text.unlikely .text.*_unlikely .text.unlikely.*)
  *(.text.exit .text.exit.*)
  *(.text.startup .text.startup.*)
@@ -224,7 +229,7 @@ LOAD lib/lib.a
                 0x0000000000006799                main
                 0x000000000000695b                init
  *fill*         0x0000000000006bd3        0x1 
- .text          0x0000000000006bd4     0x4013 kernel/kernel.o
+ .text          0x0000000000006bd4     0x4114 kernel/kernel.o
                 0x0000000000006bec                sys_sleep
                 0x0000000000006c3e                sys_getdents
                 0x0000000000006d8c                sys_pipe2
@@ -335,222 +340,228 @@ LOAD lib/lib.a
                 0x0000000000009b7f                sys_settimeofday
                 0x0000000000009b85                sys_umask
                 0x0000000000009bb8                sys_init_graphics
-                0x0000000000009cfa                sys_get_message
-                0x0000000000009d00                sys_timer_create
-                0x0000000000009d06                sys_paintrect
-                0x0000000000009e35                release
-                0x0000000000009f72                sys_kill
-                0x000000000000a1ac                do_exit
-                0x000000000000a3e0                sys_exit
-                0x000000000000a3f9                sys_waitpid
-                0x000000000000a651                sys_sgetmask
-                0x000000000000a65d                sys_ssetmask
-                0x000000000000a689                sys_sigpending
-                0x000000000000a68f                sys_sigsuspend
-                0x000000000000a728                sys_signal
-                0x000000000000a7ac                sys_sigaction
-                0x000000000000a8b6                do_signal
-                0x000000000000aaa2                kernel_mktime
- .text          0x000000000000abe7      0xc96 mm/mm.o
-                0x000000000000ac06                get_free_page
-                0x000000000000ac42                free_page
-                0x000000000000acb1                free_page_tables
-                0x000000000000adb0                copy_page_tables
-                0x000000000000af31                put_page
-                0x000000000000b01d                un_wp_page
-                0x000000000000b0d5                do_wp_page
-                0x000000000000b107                write_verify
-                0x000000000000b160                get_empty_page
-                0x000000000000b3e6                do_no_page
-                0x000000000000b548                mem_init
-                0x000000000000b5bc                calc_mem
-                0x000000000000b6b1                do_no_page2
-                0x000000000000b846                page_fault
- .text          0x000000000000b87d     0x8023 fs/fs.o
-                0x000000000000b893                sys_ustat
-                0x000000000000b899                sys_utime
-                0x000000000000b946                sys_access
-                0x000000000000ba22                sys_chdir
-                0x000000000000ba96                sys_chroot
-                0x000000000000bb0a                sys_chmod
-                0x000000000000bba4                sys_chown
-                0x000000000000bc1f                sys_open
-                0x000000000000bec2                sys_creat
-                0x000000000000bee5                sys_close
-                0x000000000000bfb4                sys_lseek
-                0x000000000000c0cb                sys_read
-                0x000000000000c2be                sys_write
-                0x000000000000c4b7                invalidate_inodes
-                0x000000000000c526                sync_inodes
-                0x000000000000c969                bmap
-                0x000000000000c98c                create_block
-                0x000000000000c9af                iput
-                0x000000000000cb1e                get_empty_inode
-                0x000000000000cc73                get_pipe_inode
-                0x000000000000cce8                iget
-                0x000000000000d0e3                sys_sync
-                0x000000000000d146                sync_dev
-                0x000000000000d23f                invalidate_buffers
-                0x000000000000d2b1                check_disk_change
-                0x000000000000d57f                get_hash_table
-                0x000000000000d601                getblk
-                0x000000000000d79f                brelse
-                0x000000000000d7e8                bread
-                0x000000000000d86d                bread_page
-                0x000000000000d98f                breada
-                0x000000000000da84                buffer_init
-                0x000000000000dc25                get_super
-                0x000000000000dc94                put_super
-                0x000000000000e0aa                sys_umount
-                0x000000000000e20b                sys_mount
-                0x000000000000e37c                mount_root
-                0x000000000000e5b0                block_write
-                0x000000000000e702                block_read
-                0x000000000000ea6d                rw_char
-                0x000000000000eafd                file_read
-                0x000000000000eca8                file_write
-                0x000000000000ef91                sys_stat
-                0x000000000000efdb                sys_lstat
-                0x000000000000eff6                sys_fstat
-                0x000000000000f053                sys_readlink
-                0x000000000000f102                sys_uselib
-                0x000000000000f5d1                do_execve
-                0x0000000000010053                do_execve2
-                0x0000000000010b6f                read_pipe
-                0x0000000000010cc5                write_pipe
-                0x0000000000010e44                sys_pipe
-                0x0000000000011823                namei
-                0x0000000000011939                open_namei
-                0x0000000000011c8c                sys_mknod
-                0x0000000000011ebc                sys_mkdir
-                0x000000000001244b                sys_rmdir
-                0x00000000000127a3                sys_unlink
-                0x0000000000012a44                sys_symlink
-                0x0000000000012a4a                sys_link
-                0x0000000000012ca4                free_block
-                0x0000000000012e16                new_block
-                0x0000000000012fba                free_inode
-                0x0000000000013121                new_inode
-                0x00000000000133d5                sys_dup2
-                0x00000000000133fc                sys_dup
-                0x0000000000013417                sys_fcntl
-                0x0000000000013556                sys_ioctl
-                0x0000000000013765                truncate
-                0x000000000001389a                sys_select
- .text          0x00000000000138a0      0x46a kernel/blk_drv/blk_drv.a(ll_rw_blk.o)
-                0x0000000000013c63                ll_rw_block
-                0x0000000000013cbc                blk_dev_init
- .text          0x0000000000013d0a      0xb9d kernel/blk_drv/blk_drv.a(floppy.o)
-                0x0000000000013df0                floppy_deselect
-                0x0000000000013e27                floppy_change
-                0x00000000000141e4                setup_rw_floppy
-                0x000000000001447d                unexpected_floppy_interrupt
-                0x0000000000014855                floppy_init
- .text          0x00000000000148a7      0xc8f kernel/blk_drv/blk_drv.a(hd.o)
-                0x000000000001497b                sys_setup
-                0x000000000001502a                unexpected_hd_interrupt
-                0x00000000000154bc                hd_init
- .text          0x0000000000015536      0x50c kernel/blk_drv/blk_drv.a(ramdisk.o)
-                0x0000000000015740                rd_init
-                0x0000000000015796                rd_load
- .text          0x0000000000015a42      0xcbb kernel/chr_drv/chr_drv.a(tty_io.o)
-                0x0000000000015a68                tty_init
-                0x0000000000015a79                tty_intr
-                0x0000000000015b86                wait_for_keypress
-                0x0000000000015b99                copy_to_cooked
-                0x0000000000016154                tty_read
-                0x00000000000164c2                tty_write
-                0x00000000000166d4                do_tty_interrupt
-                0x00000000000166fc                chr_dev_init
- .text          0x00000000000166fd     0x148b kernel/chr_drv/chr_drv.a(console.o)
-                0x00000000000167b1                readmouse
-                0x0000000000016dec                csi_m
-                0x0000000000017186                con_write
-                0x0000000000017814                con_init
-                0x0000000000017b01                sysbeepstop
- .text          0x0000000000017b88      0x7e2 kernel/chr_drv/chr_drv.a(keyboard.2.o)
-                0x0000000000017b8b                keyboard_interrupt
- .text          0x000000000001836a      0x145 kernel/chr_drv/chr_drv.a(serial.o)
-                0x00000000000183df                rs_init
-                0x0000000000018462                rs_write
- *fill*         0x00000000000184af        0x1 
- .text          0x00000000000184b0       0xf7 kernel/chr_drv/chr_drv.a(rs_io.o)
-                0x00000000000184b0                rs1_interrupt
-                0x00000000000184b8                rs2_interrupt
- .text          0x00000000000185a7      0x60f kernel/chr_drv/chr_drv.a(tty_ioctl.o)
-                0x00000000000188b8                tty_ioctl
- .text          0x0000000000018bb6       0x29 kernel/chr_drv/chr_drv.a(mouse.2.o)
-                0x0000000000018bb6                mouse_interrupt
- .text          0x0000000000018bdf      0x111 kernel/math/math.a(math_emulate.o)
-                0x0000000000018bed                math_emulate
-                0x0000000000018cd0                math_error
- .text          0x0000000000018cf0        0x0 lib/lib.a(ctype.o)
- .text          0x0000000000018cf0       0x10 lib/lib.a(_exit.o)
-                0x0000000000018cf0                _exit
- .text          0x0000000000018d00       0x49 lib/lib.a(open.o)
-                0x0000000000018d00                open
- .text          0x0000000000018d49       0x37 lib/lib.a(close.o)
-                0x0000000000018d49                close
- .text          0x0000000000018d80        0x0 lib/lib.a(errno.o)
- .text          0x0000000000018d80       0x3d lib/lib.a(write.o)
-                0x0000000000018d80                write
- .text          0x0000000000018dbd       0x37 lib/lib.a(dup.o)
-                0x0000000000018dbd                dup
- .text          0x0000000000018df4       0x2f lib/lib.a(setsid.o)
-                0x0000000000018df4                setsid
- .text          0x0000000000018e23       0x7a lib/lib.a(execve.o)
-                0x0000000000018e23                execve
-                0x0000000000018e60                execve2
- .text          0x0000000000018e9d       0x60 lib/lib.a(wait.o)
-                0x0000000000018e9d                waitpid
-                0x0000000000018eda                wait
- .text          0x0000000000018efd      0x3dc lib/lib.a(string.o)
-                0x0000000000018efd                strcpy
-                0x0000000000018f19                strncpy
-                0x0000000000018f3e                strcat
-                0x0000000000018f69                strncat
-                0x0000000000018f9e                strcmp
-                0x0000000000018fc5                strncmp
-                0x0000000000018ff3                strchr
-                0x0000000000019020                strrchr
-                0x000000000001904f                strspn
-                0x000000000001908c                strcspn
-                0x00000000000190c9                strpbrk
-                0x0000000000019100                strstr
-                0x0000000000019139                strlen
-                0x000000000001915c                strtok
-                0x00000000000191df                memcpy
-                0x00000000000191ff                memmove
-                0x0000000000019253                memcmp
-                0x000000000001927d                memchr
-                0x00000000000192b5                memset
+                0x0000000000009cfa                sys_paint
+                0x0000000000009d6c                sys_timer_creater
+                0x0000000000009ded                post_message
+                0x0000000000009e48                sys_get_message
+                0x0000000000009f36                release
+                0x000000000000a073                sys_kill
+                0x000000000000a2ad                do_exit
+                0x000000000000a4e1                sys_exit
+                0x000000000000a4fa                sys_waitpid
+                0x000000000000a752                sys_sgetmask
+                0x000000000000a75e                sys_ssetmask
+                0x000000000000a78a                sys_sigpending
+                0x000000000000a790                sys_sigsuspend
+                0x000000000000a829                sys_signal
+                0x000000000000a8ad                sys_sigaction
+                0x000000000000a9b7                do_signal
+                0x000000000000aba3                kernel_mktime
+ .text          0x000000000000ace8      0xc96 mm/mm.o
+                0x000000000000ad07                get_free_page
+                0x000000000000ad43                free_page
+                0x000000000000adb2                free_page_tables
+                0x000000000000aeb1                copy_page_tables
+                0x000000000000b032                put_page
+                0x000000000000b11e                un_wp_page
+                0x000000000000b1d6                do_wp_page
+                0x000000000000b208                write_verify
+                0x000000000000b261                get_empty_page
+                0x000000000000b4e7                do_no_page
+                0x000000000000b649                mem_init
+                0x000000000000b6bd                calc_mem
+                0x000000000000b7b2                do_no_page2
+                0x000000000000b947                page_fault
+ .text          0x000000000000b97e     0x8023 fs/fs.o
+                0x000000000000b994                sys_ustat
+                0x000000000000b99a                sys_utime
+                0x000000000000ba47                sys_access
+                0x000000000000bb23                sys_chdir
+                0x000000000000bb97                sys_chroot
+                0x000000000000bc0b                sys_chmod
+                0x000000000000bca5                sys_chown
+                0x000000000000bd20                sys_open
+                0x000000000000bfc3                sys_creat
+                0x000000000000bfe6                sys_close
+                0x000000000000c0b5                sys_lseek
+                0x000000000000c1cc                sys_read
+                0x000000000000c3bf                sys_write
+                0x000000000000c5b8                invalidate_inodes
+                0x000000000000c627                sync_inodes
+                0x000000000000ca6a                bmap
+                0x000000000000ca8d                create_block
+                0x000000000000cab0                iput
+                0x000000000000cc1f                get_empty_inode
+                0x000000000000cd74                get_pipe_inode
+                0x000000000000cde9                iget
+                0x000000000000d1e4                sys_sync
+                0x000000000000d247                sync_dev
+                0x000000000000d340                invalidate_buffers
+                0x000000000000d3b2                check_disk_change
+                0x000000000000d680                get_hash_table
+                0x000000000000d702                getblk
+                0x000000000000d8a0                brelse
+                0x000000000000d8e9                bread
+                0x000000000000d96e                bread_page
+                0x000000000000da90                breada
+                0x000000000000db85                buffer_init
+                0x000000000000dd26                get_super
+                0x000000000000dd95                put_super
+                0x000000000000e1ab                sys_umount
+                0x000000000000e30c                sys_mount
+                0x000000000000e47d                mount_root
+                0x000000000000e6b1                block_write
+                0x000000000000e803                block_read
+                0x000000000000eb6e                rw_char
+                0x000000000000ebfe                file_read
+                0x000000000000eda9                file_write
+                0x000000000000f092                sys_stat
+                0x000000000000f0dc                sys_lstat
+                0x000000000000f0f7                sys_fstat
+                0x000000000000f154                sys_readlink
+                0x000000000000f203                sys_uselib
+                0x000000000000f6d2                do_execve
+                0x0000000000010154                do_execve2
+                0x0000000000010c70                read_pipe
+                0x0000000000010dc6                write_pipe
+                0x0000000000010f45                sys_pipe
+                0x0000000000011924                namei
+                0x0000000000011a3a                open_namei
+                0x0000000000011d8d                sys_mknod
+                0x0000000000011fbd                sys_mkdir
+                0x000000000001254c                sys_rmdir
+                0x00000000000128a4                sys_unlink
+                0x0000000000012b45                sys_symlink
+                0x0000000000012b4b                sys_link
+                0x0000000000012da5                free_block
+                0x0000000000012f17                new_block
+                0x00000000000130bb                free_inode
+                0x0000000000013222                new_inode
+                0x00000000000134d6                sys_dup2
+                0x00000000000134fd                sys_dup
+                0x0000000000013518                sys_fcntl
+                0x0000000000013657                sys_ioctl
+                0x0000000000013866                truncate
+                0x000000000001399b                sys_select
+ .text          0x00000000000139a1      0x46a kernel/blk_drv/blk_drv.a(ll_rw_blk.o)
+                0x0000000000013d64                ll_rw_block
+                0x0000000000013dbd                blk_dev_init
+ .text          0x0000000000013e0b      0xb9d kernel/blk_drv/blk_drv.a(floppy.o)
+                0x0000000000013ef1                floppy_deselect
+                0x0000000000013f28                floppy_change
+                0x00000000000142e5                setup_rw_floppy
+                0x000000000001457e                unexpected_floppy_interrupt
+                0x0000000000014956                floppy_init
+ .text          0x00000000000149a8      0xc8f kernel/blk_drv/blk_drv.a(hd.o)
+                0x0000000000014a7c                sys_setup
+                0x000000000001512b                unexpected_hd_interrupt
+                0x00000000000155bd                hd_init
+ .text          0x0000000000015637      0x50c kernel/blk_drv/blk_drv.a(ramdisk.o)
+                0x0000000000015841                rd_init
+                0x0000000000015897                rd_load
+ .text          0x0000000000015b43      0xcbb kernel/chr_drv/chr_drv.a(tty_io.o)
+                0x0000000000015b69                tty_init
+                0x0000000000015b7a                tty_intr
+                0x0000000000015c87                wait_for_keypress
+                0x0000000000015c9a                copy_to_cooked
+                0x0000000000016255                tty_read
+                0x00000000000165c3                tty_write
+                0x00000000000167d5                do_tty_interrupt
+                0x00000000000167fd                chr_dev_init
+ .text          0x00000000000167fe     0x150c kernel/chr_drv/chr_drv.a(console.o)
+                0x00000000000168b2                readmouse
+                0x0000000000016f6e                csi_m
+                0x0000000000017308                con_write
+                0x0000000000017996                con_init
+                0x0000000000017c83                sysbeepstop
+ .text          0x0000000000017d0a      0x7e2 kernel/chr_drv/chr_drv.a(keyboard.2.o)
+                0x0000000000017d0d                keyboard_interrupt
+ .text          0x00000000000184ec      0x145 kernel/chr_drv/chr_drv.a(serial.o)
+                0x0000000000018561                rs_init
+                0x00000000000185e4                rs_write
+ *fill*         0x0000000000018631        0x3 
+ .text          0x0000000000018634       0xf7 kernel/chr_drv/chr_drv.a(rs_io.o)
+                0x0000000000018634                rs1_interrupt
+                0x000000000001863c                rs2_interrupt
+ .text          0x000000000001872b      0x60f kernel/chr_drv/chr_drv.a(tty_ioctl.o)
+                0x0000000000018a3c                tty_ioctl
+ .text          0x0000000000018d3a       0x29 kernel/chr_drv/chr_drv.a(mouse.2.o)
+                0x0000000000018d3a                mouse_interrupt
+ .text          0x0000000000018d63      0x111 kernel/math/math.a(math_emulate.o)
+                0x0000000000018d71                math_emulate
+                0x0000000000018e54                math_error
+ .text          0x0000000000018e74        0x0 lib/lib.a(ctype.o)
+ .text          0x0000000000018e74       0x10 lib/lib.a(_exit.o)
+                0x0000000000018e74                _exit
+ .text          0x0000000000018e84       0x49 lib/lib.a(open.o)
+                0x0000000000018e84                open
+ .text          0x0000000000018ecd       0x37 lib/lib.a(close.o)
+                0x0000000000018ecd                close
+ .text          0x0000000000018f04        0x0 lib/lib.a(errno.o)
+ .text          0x0000000000018f04       0x3d lib/lib.a(write.o)
+                0x0000000000018f04                write
+ .text          0x0000000000018f41       0x37 lib/lib.a(dup.o)
+                0x0000000000018f41                dup
+ .text          0x0000000000018f78       0x2f lib/lib.a(setsid.o)
+                0x0000000000018f78                setsid
+ .text          0x0000000000018fa7       0x7a lib/lib.a(execve.o)
+                0x0000000000018fa7                execve
+                0x0000000000018fe4                execve2
+ .text          0x0000000000019021       0x60 lib/lib.a(wait.o)
+                0x0000000000019021                waitpid
+                0x000000000001905e                wait
+ .text          0x0000000000019081      0x3dc lib/lib.a(string.o)
+                0x0000000000019081                strcpy
+                0x000000000001909d                strncpy
+                0x00000000000190c2                strcat
+                0x00000000000190ed                strncat
+                0x0000000000019122                strcmp
+                0x0000000000019149                strncmp
+                0x0000000000019177                strchr
+                0x00000000000191a4                strrchr
+                0x00000000000191d3                strspn
+                0x0000000000019210                strcspn
+                0x000000000001924d                strpbrk
+                0x0000000000019284                strstr
+                0x00000000000192bd                strlen
+                0x00000000000192e0                strtok
+                0x0000000000019363                memcpy
+                0x0000000000019383                memmove
+                0x00000000000193d7                memcmp
+                0x0000000000019401                memchr
+                0x0000000000019439                memset
+ .text          0x000000000001945d      0x36c lib/lib.a(malloc.o)
+                0x00000000000194c6                malloc
+                0x0000000000019652                free_s
  *(.gnu.warning)
 
 .fini
  *(SORT(.fini))
-                0x00000000000192d9                PROVIDE (__etext, .)
-                0x00000000000192d9                PROVIDE (_etext, .)
-                0x00000000000192d9                PROVIDE (etext, .)
+                0x00000000000197c9                PROVIDE (__etext, .)
+                0x00000000000197c9                PROVIDE (_etext, .)
+                0x00000000000197c9                PROVIDE (etext, .)
 
-.rodata         0x00000000000192dc     0x13fa
+.rodata         0x00000000000197cc     0x14cf
  *(.rodata .rodata.* .gnu.linkonce.r.*)
- .rodata        0x00000000000192dc       0xad init/main.o
- *fill*         0x0000000000019389        0x3 
- .rodata        0x000000000001938c      0x444 kernel/kernel.o
- .rodata        0x00000000000197d0      0x1b3 mm/mm.o
- *fill*         0x0000000000019983        0x1 
- .rodata        0x0000000000019984      0x62c fs/fs.o
- .rodata        0x0000000000019fb0       0x7a kernel/blk_drv/blk_drv.a(ll_rw_blk.o)
- *fill*         0x000000000001a02a        0x2 
- .rodata        0x000000000001a02c      0x133 kernel/blk_drv/blk_drv.a(floppy.o)
- *fill*         0x000000000001a15f        0x1 
- .rodata        0x000000000001a160      0x19b kernel/blk_drv/blk_drv.a(hd.o)
- *fill*         0x000000000001a2fb        0x1 
- .rodata        0x000000000001a2fc      0x188 kernel/blk_drv/blk_drv.a(ramdisk.o)
- .rodata        0x000000000001a484      0x17d kernel/chr_drv/chr_drv.a(console.o)
- *fill*         0x000000000001a601        0x3 
- .rodata        0x000000000001a604       0x80 kernel/chr_drv/chr_drv.a(tty_ioctl.o)
- .rodata        0x000000000001a684       0x52 kernel/math/math.a(math_emulate.o)
+ .rodata        0x00000000000197cc       0xad init/main.o
+ *fill*         0x0000000000019879        0x3 
+ .rodata        0x000000000001987c      0x444 kernel/kernel.o
+ .rodata        0x0000000000019cc0      0x1b3 mm/mm.o
+ *fill*         0x0000000000019e73        0x1 
+ .rodata        0x0000000000019e74      0x62c fs/fs.o
+ .rodata        0x000000000001a4a0       0x7a kernel/blk_drv/blk_drv.a(ll_rw_blk.o)
+ *fill*         0x000000000001a51a        0x2 
+ .rodata        0x000000000001a51c      0x133 kernel/blk_drv/blk_drv.a(floppy.o)
+ *fill*         0x000000000001a64f        0x1 
+ .rodata        0x000000000001a650      0x19b kernel/blk_drv/blk_drv.a(hd.o)
+ *fill*         0x000000000001a7eb        0x1 
+ .rodata        0x000000000001a7ec      0x188 kernel/blk_drv/blk_drv.a(ramdisk.o)
+ .rodata        0x000000000001a974      0x17d kernel/chr_drv/chr_drv.a(console.o)
+ *fill*         0x000000000001aaf1        0x3 
+ .rodata        0x000000000001aaf4       0x80 kernel/chr_drv/chr_drv.a(tty_ioctl.o)
+ .rodata        0x000000000001ab74       0x52 kernel/math/math.a(math_emulate.o)
+ *fill*         0x000000000001abc6        0x2 
+ .rodata        0x000000000001abc8       0xd3 lib/lib.a(malloc.o)
 
 .rodata1
  *(.rodata1)
@@ -558,58 +569,60 @@ LOAD lib/lib.a
 .eh_frame_hdr
  *(.eh_frame_hdr)
 
-.eh_frame       0x000000000001a6d8     0x2be0
+.eh_frame       0x000000000001ac9c     0x2c58
  *(.eh_frame)
- .eh_frame      0x000000000001a6d8       0xf0 init/main.o
- .eh_frame      0x000000000001a7c8      0xbf0 kernel/kernel.o
-                                        0xce0 (size before relaxing)
- .eh_frame      0x000000000001b3b8      0x1b0 mm/mm.o
+ .eh_frame      0x000000000001ac9c       0xf0 init/main.o
+ .eh_frame      0x000000000001ad8c      0xc10 kernel/kernel.o
+                                        0xd00 (size before relaxing)
+ .eh_frame      0x000000000001b99c      0x1b0 mm/mm.o
                                         0x1c8 (size before relaxing)
- .eh_frame      0x000000000001b568      0xe10 fs/fs.o
+ .eh_frame      0x000000000001bb4c      0xe10 fs/fs.o
                                         0xfa8 (size before relaxing)
- .eh_frame      0x000000000001c378       0x98 kernel/blk_drv/blk_drv.a(ll_rw_blk.o)
+ .eh_frame      0x000000000001c95c       0x98 kernel/blk_drv/blk_drv.a(ll_rw_blk.o)
                                          0xb0 (size before relaxing)
- .eh_frame      0x000000000001c410      0x23c kernel/blk_drv/blk_drv.a(floppy.o)
+ .eh_frame      0x000000000001c9f4      0x23c kernel/blk_drv/blk_drv.a(floppy.o)
                                         0x254 (size before relaxing)
- .eh_frame      0x000000000001c64c      0x1e8 kernel/blk_drv/blk_drv.a(hd.o)
+ .eh_frame      0x000000000001cc30      0x1e8 kernel/blk_drv/blk_drv.a(hd.o)
                                         0x200 (size before relaxing)
- .eh_frame      0x000000000001c834       0xac kernel/blk_drv/blk_drv.a(ramdisk.o)
+ .eh_frame      0x000000000001ce18       0xac kernel/blk_drv/blk_drv.a(ramdisk.o)
                                          0xc4 (size before relaxing)
- .eh_frame      0x000000000001c8e0      0x12c kernel/chr_drv/chr_drv.a(tty_io.o)
+ .eh_frame      0x000000000001cec4      0x12c kernel/chr_drv/chr_drv.a(tty_io.o)
                                         0x144 (size before relaxing)
- .eh_frame      0x000000000001ca0c      0x2d4 kernel/chr_drv/chr_drv.a(console.o)
-                                        0x2ec (size before relaxing)
- .eh_frame      0x000000000001cce0       0x54 kernel/chr_drv/chr_drv.a(serial.o)
+ .eh_frame      0x000000000001cff0      0x2dc kernel/chr_drv/chr_drv.a(console.o)
+                                        0x2f4 (size before relaxing)
+ .eh_frame      0x000000000001d2cc       0x54 kernel/chr_drv/chr_drv.a(serial.o)
                                          0x6c (size before relaxing)
- .eh_frame      0x000000000001cd34      0x148 kernel/chr_drv/chr_drv.a(tty_ioctl.o)
+ .eh_frame      0x000000000001d320      0x148 kernel/chr_drv/chr_drv.a(tty_ioctl.o)
                                         0x160 (size before relaxing)
- .eh_frame      0x000000000001ce7c       0x5c kernel/math/math.a(math_emulate.o)
+ .eh_frame      0x000000000001d468       0x5c kernel/math/math.a(math_emulate.o)
                                          0x74 (size before relaxing)
- .eh_frame      0x000000000001ced8       0x1c lib/lib.a(_exit.o)
+ .eh_frame      0x000000000001d4c4       0x1c lib/lib.a(_exit.o)
                                          0x34 (size before relaxing)
- .eh_frame      0x000000000001cef4       0x24 lib/lib.a(open.o)
+ .eh_frame      0x000000000001d4e0       0x24 lib/lib.a(open.o)
                                          0x3c (size before relaxing)
- .eh_frame      0x000000000001cf18       0x20 lib/lib.a(close.o)
+ .eh_frame      0x000000000001d504       0x20 lib/lib.a(close.o)
                                          0x38 (size before relaxing)
- .eh_frame      0x000000000001cf38       0x20 lib/lib.a(write.o)
+ .eh_frame      0x000000000001d524       0x20 lib/lib.a(write.o)
                                          0x38 (size before relaxing)
- .eh_frame      0x000000000001cf58       0x20 lib/lib.a(dup.o)
+ .eh_frame      0x000000000001d544       0x20 lib/lib.a(dup.o)
                                          0x38 (size before relaxing)
- .eh_frame      0x000000000001cf78       0x18 lib/lib.a(setsid.o)
+ .eh_frame      0x000000000001d564       0x18 lib/lib.a(setsid.o)
                                          0x30 (size before relaxing)
- .eh_frame      0x000000000001cf90       0x40 lib/lib.a(execve.o)
+ .eh_frame      0x000000000001d57c       0x40 lib/lib.a(execve.o)
                                          0x58 (size before relaxing)
- .eh_frame      0x000000000001cfd0       0x38 lib/lib.a(wait.o)
+ .eh_frame      0x000000000001d5bc       0x38 lib/lib.a(wait.o)
                                          0x50 (size before relaxing)
- .eh_frame      0x000000000001d008      0x2b0 lib/lib.a(string.o)
+ .eh_frame      0x000000000001d5f4      0x2b0 lib/lib.a(string.o)
                                         0x2c8 (size before relaxing)
+ .eh_frame      0x000000000001d8a4       0x50 lib/lib.a(malloc.o)
+                                         0x68 (size before relaxing)
 
 .gcc_except_table
  *(.gcc_except_table .gcc_except_table.*)
 
 .exception_ranges
  *(.exception_ranges .exception_ranges*)
-                0x000000000001d2b8                . = .
+                0x000000000001d8f4                . = .
 
 .eh_frame
  *(.eh_frame)
@@ -627,22 +640,22 @@ LOAD lib/lib.a
  *(.tbss .tbss.* .gnu.linkonce.tb.*)
  *(.tcommon)
 
-.preinit_array  0x000000000001d2b8        0x0
-                0x000000000001d2b8                PROVIDE (__preinit_array_start, .)
+.preinit_array  0x000000000001d8f4        0x0
+                0x000000000001d8f4                PROVIDE (__preinit_array_start, .)
  *(.preinit_array)
-                0x000000000001d2b8                PROVIDE (__preinit_array_end, .)
+                0x000000000001d8f4                PROVIDE (__preinit_array_end, .)
 
-.init_array     0x000000000001d2b8        0x0
-                0x000000000001d2b8                PROVIDE (__init_array_start, .)
+.init_array     0x000000000001d8f4        0x0
+                0x000000000001d8f4                PROVIDE (__init_array_start, .)
  *(SORT(.init_array.*) SORT(.ctors.*))
  *(.init_array EXCLUDE_FILE(*crtend?.o *crtend.o *crtbegin?.o *crtbegin.o) .ctors)
-                0x000000000001d2b8                PROVIDE (__init_array_end, .)
+                0x000000000001d8f4                PROVIDE (__init_array_end, .)
 
-.fini_array     0x000000000001d2b8        0x0
-                0x000000000001d2b8                PROVIDE (__fini_array_start, .)
+.fini_array     0x000000000001d8f4        0x0
+                0x000000000001d8f4                PROVIDE (__fini_array_start, .)
  *(SORT(.fini_array.*) SORT(.dtors.*))
  *(.fini_array EXCLUDE_FILE(*crtend?.o *crtend.o *crtbegin?.o *crtbegin.o) .dtors)
-                0x000000000001d2b8                PROVIDE (__fini_array_end, .)
+                0x000000000001d8f4                PROVIDE (__fini_array_end, .)
 
 .ctors
  *crtbegin.o(.ctors)
@@ -672,142 +685,152 @@ LOAD lib/lib.a
  *(.got)
  *(.igot)
 
-.got.plt        0x000000000001d2b8        0x0
+.got.plt        0x000000000001d8f4        0x0
  *(.got.plt)
  *(.igot.plt)
  .igot.plt      0x0000000000000000        0x0 boot/head.o
 
-.data           0x000000000001d2c0     0x3b41
+.data           0x000000000001d900     0x3bb0
  *(.data .data.* .gnu.linkonce.d.*)
- .data          0x000000000001d2c0        0x0 boot/head.o
- .data          0x000000000001d2c0       0x28 init/main.o
- *fill*         0x000000000001d2e8       0x18 
- .data          0x000000000001d300     0x1350 kernel/kernel.o
-                0x000000000001d300                sys_call_table
-                0x000000000001d480                NR_syscalls
-                0x000000000001e4a0                current
-                0x000000000001e4c0                task
-                0x000000000001e5c0                stack_start
-                0x000000000001e5c8                current_DOR
- .data          0x000000000001e650        0x0 mm/mm.o
- *fill*         0x000000000001e650       0x10 
- .data          0x000000000001e660       0x60 fs/fs.o
-                0x000000000001e664                start_buffer
- .data          0x000000000001e6c0        0x0 kernel/blk_drv/blk_drv.a(ll_rw_blk.o)
- .data          0x000000000001e6c0       0xcd kernel/blk_drv/blk_drv.a(floppy.o)
- *fill*         0x000000000001e78d        0x3 
- .data          0x000000000001e790        0x4 kernel/blk_drv/blk_drv.a(hd.o)
- .data          0x000000000001e794        0x0 kernel/blk_drv/blk_drv.a(ramdisk.o)
- *fill*         0x000000000001e794        0xc 
- .data          0x000000000001e7a0     0x2538 kernel/chr_drv/chr_drv.a(tty_io.o)
-                0x000000000001e7a0                tty_table
-                0x0000000000020cc0                table_list
- .data          0x0000000000020cd8        0x1 kernel/chr_drv/chr_drv.a(console.o)
- .data          0x0000000000020cd9        0x0 kernel/chr_drv/chr_drv.a(keyboard.2.o)
- .data          0x0000000000020cd9        0x0 kernel/chr_drv/chr_drv.a(serial.o)
- .data          0x0000000000020cd9        0x0 kernel/chr_drv/chr_drv.a(rs_io.o)
- *fill*         0x0000000000020cd9        0x7 
- .data          0x0000000000020ce0       0x20 kernel/chr_drv/chr_drv.a(tty_ioctl.o)
- .data          0x0000000000020d00        0x0 kernel/chr_drv/chr_drv.a(mouse.2.o)
- .data          0x0000000000020d00        0x0 kernel/math/math.a(math_emulate.o)
- .data          0x0000000000020d00      0x101 lib/lib.a(ctype.o)
-                0x0000000000020d00                _ctype
- .data          0x0000000000020e01        0x0 lib/lib.a(_exit.o)
- .data          0x0000000000020e01        0x0 lib/lib.a(open.o)
- .data          0x0000000000020e01        0x0 lib/lib.a(close.o)
- .data          0x0000000000020e01        0x0 lib/lib.a(errno.o)
- .data          0x0000000000020e01        0x0 lib/lib.a(write.o)
- .data          0x0000000000020e01        0x0 lib/lib.a(dup.o)
- .data          0x0000000000020e01        0x0 lib/lib.a(setsid.o)
- .data          0x0000000000020e01        0x0 lib/lib.a(execve.o)
- .data          0x0000000000020e01        0x0 lib/lib.a(wait.o)
- .data          0x0000000000020e01        0x0 lib/lib.a(string.o)
+ .data          0x000000000001d900        0x0 boot/head.o
+ .data          0x000000000001d900       0x28 init/main.o
+ *fill*         0x000000000001d928       0x18 
+ .data          0x000000000001d940     0x1350 kernel/kernel.o
+                0x000000000001d940                sys_call_table
+                0x000000000001dac0                NR_syscalls
+                0x000000000001eae0                current
+                0x000000000001eb00                task
+                0x000000000001ec00                stack_start
+                0x000000000001ec08                current_DOR
+ .data          0x000000000001ec90        0x0 mm/mm.o
+ *fill*         0x000000000001ec90       0x10 
+ .data          0x000000000001eca0       0x60 fs/fs.o
+                0x000000000001eca4                start_buffer
+ .data          0x000000000001ed00        0x0 kernel/blk_drv/blk_drv.a(ll_rw_blk.o)
+ .data          0x000000000001ed00       0xcd kernel/blk_drv/blk_drv.a(floppy.o)
+ *fill*         0x000000000001edcd        0x3 
+ .data          0x000000000001edd0        0x4 kernel/blk_drv/blk_drv.a(hd.o)
+ .data          0x000000000001edd4        0x0 kernel/blk_drv/blk_drv.a(ramdisk.o)
+ *fill*         0x000000000001edd4        0xc 
+ .data          0x000000000001ede0     0x2538 kernel/chr_drv/chr_drv.a(tty_io.o)
+                0x000000000001ede0                tty_table
+                0x0000000000021300                table_list
+ .data          0x0000000000021318        0x1 kernel/chr_drv/chr_drv.a(console.o)
+ .data          0x0000000000021319        0x0 kernel/chr_drv/chr_drv.a(keyboard.2.o)
+ .data          0x0000000000021319        0x0 kernel/chr_drv/chr_drv.a(serial.o)
+ .data          0x0000000000021319        0x0 kernel/chr_drv/chr_drv.a(rs_io.o)
+ *fill*         0x0000000000021319        0x7 
+ .data          0x0000000000021320       0x20 kernel/chr_drv/chr_drv.a(tty_ioctl.o)
+ .data          0x0000000000021340        0x0 kernel/chr_drv/chr_drv.a(mouse.2.o)
+ .data          0x0000000000021340        0x0 kernel/math/math.a(math_emulate.o)
+ .data          0x0000000000021340      0x101 lib/lib.a(ctype.o)
+                0x0000000000021340                _ctype
+ .data          0x0000000000021441        0x0 lib/lib.a(_exit.o)
+ .data          0x0000000000021441        0x0 lib/lib.a(open.o)
+ .data          0x0000000000021441        0x0 lib/lib.a(close.o)
+ .data          0x0000000000021441        0x0 lib/lib.a(errno.o)
+ .data          0x0000000000021441        0x0 lib/lib.a(write.o)
+ .data          0x0000000000021441        0x0 lib/lib.a(dup.o)
+ .data          0x0000000000021441        0x0 lib/lib.a(setsid.o)
+ .data          0x0000000000021441        0x0 lib/lib.a(execve.o)
+ .data          0x0000000000021441        0x0 lib/lib.a(wait.o)
+ .data          0x0000000000021441        0x0 lib/lib.a(string.o)
+ *fill*         0x0000000000021441       0x1f 
+ .data          0x0000000000021460       0x50 lib/lib.a(malloc.o)
+                0x0000000000021460                bucket_dir
 
 .data1
  *(.data1)
-                0x0000000000020e01                _edata = .
-                0x0000000000020e01                PROVIDE (edata, .)
-                0x0000000000020e01                . = .
-                0x0000000000020e01                __bss_start = .
+                0x00000000000214b0                _edata = .
+                0x00000000000214b0                PROVIDE (edata, .)
+                0x00000000000214b0                . = .
+                0x00000000000214b0                __bss_start = .
 
-.bss            0x0000000000020e20     0x44b0
+.bss            0x00000000000214c0     0x64f0
  *(.dynbss)
  *(.bss .bss.* .gnu.linkonce.b.*)
- .bss           0x0000000000020e20        0x0 boot/head.o
- .bss           0x0000000000020e20      0x40c init/main.o
- *fill*         0x000000000002122c       0x14 
- .bss           0x0000000000021240      0x760 kernel/kernel.o
-                0x0000000000021240                jiffies
-                0x0000000000021244                startup_time
-                0x0000000000021248                last_task_used_math
-                0x0000000000021584                last_pid
- .bss           0x00000000000219a0      0xf20 mm/mm.o
- .bss           0x00000000000228c0      0x710 fs/fs.o
-                0x00000000000228c0                inode_table
-                0x0000000000022fc0                nr_buffers
-                0x0000000000022fcc                ROOT_DEV
- *fill*         0x0000000000022fd0       0x10 
- .bss           0x0000000000022fe0       0x58 kernel/blk_drv/blk_drv.a(ll_rw_blk.o)
-                0x0000000000022fe0                wait_for_request
-                0x0000000000023000                blk_dev
- .bss           0x0000000000023038       0x25 kernel/blk_drv/blk_drv.a(floppy.o)
-                0x0000000000023038                do_floppy
-                0x000000000002303c                selected
-                0x0000000000023040                wait_on_floppy_select
- *fill*         0x000000000002305d        0x3 
- .bss           0x0000000000023060       0xb0 kernel/blk_drv/blk_drv.a(hd.o)
-                0x0000000000023060                do_hd
-                0x0000000000023080                hd_info
- .bss           0x0000000000023110        0x4 kernel/blk_drv/blk_drv.a(ramdisk.o)
-                0x0000000000023110                rd_length
- .bss           0x0000000000023114        0x4 kernel/chr_drv/chr_drv.a(tty_io.o)
- *fill*         0x0000000000023118        0x8 
- .bss           0x0000000000023120       0xbc kernel/chr_drv/chr_drv.a(console.o)
-                0x0000000000023120                beepcount
- .bss           0x00000000000231dc        0x0 kernel/chr_drv/chr_drv.a(keyboard.2.o)
- .bss           0x00000000000231dc        0x0 kernel/chr_drv/chr_drv.a(serial.o)
- .bss           0x00000000000231dc        0x0 kernel/chr_drv/chr_drv.a(rs_io.o)
- .bss           0x00000000000231dc        0x0 kernel/chr_drv/chr_drv.a(tty_ioctl.o)
- .bss           0x00000000000231dc        0x0 kernel/chr_drv/chr_drv.a(mouse.2.o)
- .bss           0x00000000000231dc        0x0 kernel/math/math.a(math_emulate.o)
- .bss           0x00000000000231dc        0x0 lib/lib.a(ctype.o)
- .bss           0x00000000000231dc        0x0 lib/lib.a(_exit.o)
- .bss           0x00000000000231dc        0x0 lib/lib.a(open.o)
- .bss           0x00000000000231dc        0x0 lib/lib.a(close.o)
- .bss           0x00000000000231dc        0x0 lib/lib.a(errno.o)
- .bss           0x00000000000231dc        0x0 lib/lib.a(write.o)
- .bss           0x00000000000231dc        0x0 lib/lib.a(dup.o)
- .bss           0x00000000000231dc        0x0 lib/lib.a(setsid.o)
- .bss           0x00000000000231dc        0x0 lib/lib.a(execve.o)
- .bss           0x00000000000231dc        0x0 lib/lib.a(wait.o)
- .bss           0x00000000000231dc        0x0 lib/lib.a(string.o)
+ .bss           0x00000000000214c0        0x0 boot/head.o
+ .bss           0x00000000000214c0      0x40c init/main.o
+ *fill*         0x00000000000218cc       0x14 
+ .bss           0x00000000000218e0      0x76c kernel/kernel.o
+                0x00000000000218e0                jiffies
+                0x00000000000218e4                startup_time
+                0x00000000000218e8                last_task_used_math
+                0x0000000000021c24                last_pid
+                0x0000000000022040                user_timer_list
+                0x0000000000022044                msg_que_fron
+                0x0000000000022048                msg_que_rear
+ *fill*         0x000000000002204c       0x14 
+ .bss           0x0000000000022060      0xf20 mm/mm.o
+ .bss           0x0000000000022f80      0x710 fs/fs.o
+                0x0000000000022f80                inode_table
+                0x0000000000023680                nr_buffers
+                0x000000000002368c                ROOT_DEV
+ *fill*         0x0000000000023690       0x10 
+ .bss           0x00000000000236a0       0x58 kernel/blk_drv/blk_drv.a(ll_rw_blk.o)
+                0x00000000000236a0                wait_for_request
+                0x00000000000236c0                blk_dev
+ .bss           0x00000000000236f8       0x25 kernel/blk_drv/blk_drv.a(floppy.o)
+                0x00000000000236f8                do_floppy
+                0x00000000000236fc                selected
+                0x0000000000023700                wait_on_floppy_select
+ *fill*         0x000000000002371d        0x3 
+ .bss           0x0000000000023720       0xb0 kernel/blk_drv/blk_drv.a(hd.o)
+                0x0000000000023720                do_hd
+                0x0000000000023740                hd_info
+ .bss           0x00000000000237d0        0x4 kernel/blk_drv/blk_drv.a(ramdisk.o)
+                0x00000000000237d0                rd_length
+ .bss           0x00000000000237d4        0x4 kernel/chr_drv/chr_drv.a(tty_io.o)
+ *fill*         0x00000000000237d8        0x8 
+ .bss           0x00000000000237e0       0xbc kernel/chr_drv/chr_drv.a(console.o)
+                0x00000000000237e0                beepcount
+ .bss           0x000000000002389c        0x0 kernel/chr_drv/chr_drv.a(keyboard.2.o)
+ .bss           0x000000000002389c        0x0 kernel/chr_drv/chr_drv.a(serial.o)
+ .bss           0x000000000002389c        0x0 kernel/chr_drv/chr_drv.a(rs_io.o)
+ .bss           0x000000000002389c        0x0 kernel/chr_drv/chr_drv.a(tty_ioctl.o)
+ .bss           0x000000000002389c        0x0 kernel/chr_drv/chr_drv.a(mouse.2.o)
+ .bss           0x000000000002389c        0x0 kernel/math/math.a(math_emulate.o)
+ .bss           0x000000000002389c        0x0 lib/lib.a(ctype.o)
+ .bss           0x000000000002389c        0x0 lib/lib.a(_exit.o)
+ .bss           0x000000000002389c        0x0 lib/lib.a(open.o)
+ .bss           0x000000000002389c        0x0 lib/lib.a(close.o)
+ .bss           0x000000000002389c        0x0 lib/lib.a(errno.o)
+ .bss           0x000000000002389c        0x0 lib/lib.a(write.o)
+ .bss           0x000000000002389c        0x0 lib/lib.a(dup.o)
+ .bss           0x000000000002389c        0x0 lib/lib.a(setsid.o)
+ .bss           0x000000000002389c        0x0 lib/lib.a(execve.o)
+ .bss           0x000000000002389c        0x0 lib/lib.a(wait.o)
+ .bss           0x000000000002389c        0x0 lib/lib.a(string.o)
+ .bss           0x000000000002389c        0x4 lib/lib.a(malloc.o)
+                0x000000000002389c                free_bucket_desc
  *(COMMON)
- *fill*         0x00000000000231dc        0x4 
- COMMON         0x00000000000231e0       0x20 init/main.o
-                0x00000000000231e0                drive_info
- COMMON         0x0000000000023200     0x1000 kernel/kernel.o
-                0x0000000000023200                user_stack
- COMMON         0x0000000000024200      0xc40 fs/fs.o
-                0x0000000000024200                hash_table
-                0x00000000000246e0                super_block
-                0x0000000000024a40                file_table
- COMMON         0x0000000000024e40      0x480 kernel/blk_drv/blk_drv.a(ll_rw_blk.o)
-                0x0000000000024e40                request
- COMMON         0x00000000000252c0        0x4 kernel/blk_drv/blk_drv.a(ramdisk.o)
-                0x00000000000252c0                rd_start
- COMMON         0x00000000000252c4        0x1 lib/lib.a(ctype.o)
-                0x00000000000252c4                _ctmp
- *fill*         0x00000000000252c5        0x3 
- COMMON         0x00000000000252c8        0x4 lib/lib.a(errno.o)
-                0x00000000000252c8                errno
- COMMON         0x00000000000252cc        0x4 lib/lib.a(string.o)
-                0x00000000000252cc                ___strtok
-                0x00000000000252d0                . = ALIGN ((. != 0x0)?0x4:0x1)
-                0x00000000000252d0                . = ALIGN (0x4)
-                0x00000000000252d0                . = SEGMENT_START ("ldata-segment", .)
-                0x00000000000252d0                . = ALIGN (0x4)
-                0x00000000000252d0                _end = .
-                0x00000000000252d0                PROVIDE (end, .)
+ COMMON         0x00000000000238a0       0x20 init/main.o
+                0x00000000000238a0                drive_info
+ COMMON         0x00000000000238c0     0x3020 kernel/kernel.o
+                0x00000000000238c0                msg_que
+                0x00000000000258c0                message
+                0x00000000000258e0                user_stack
+ COMMON         0x00000000000268e0      0xc40 fs/fs.o
+                0x00000000000268e0                hash_table
+                0x0000000000026dc0                super_block
+                0x0000000000027120                file_table
+ COMMON         0x0000000000027520      0x480 kernel/blk_drv/blk_drv.a(ll_rw_blk.o)
+                0x0000000000027520                request
+ COMMON         0x00000000000279a0        0x4 kernel/blk_drv/blk_drv.a(ramdisk.o)
+                0x00000000000279a0                rd_start
+ COMMON         0x00000000000279a4        0x1 lib/lib.a(ctype.o)
+                0x00000000000279a4                _ctmp
+ *fill*         0x00000000000279a5        0x3 
+ COMMON         0x00000000000279a8        0x4 lib/lib.a(errno.o)
+                0x00000000000279a8                errno
+ COMMON         0x00000000000279ac        0x4 lib/lib.a(string.o)
+                0x00000000000279ac                ___strtok
+                0x00000000000279b0                . = ALIGN ((. != 0x0)?0x4:0x1)
+                0x00000000000279b0                . = ALIGN (0x4)
+                0x00000000000279b0                . = SEGMENT_START ("ldata-segment", .)
+                0x00000000000279b0                . = ALIGN (0x4)
+                0x00000000000279b0                _end = .
+                0x00000000000279b0                PROVIDE (end, .)
 
 .stab
  *(.stab)
@@ -854,6 +877,7 @@ LOAD lib/lib.a
  .comment       0x0000000000000000       0x2a lib/lib.a(execve.o)
  .comment       0x0000000000000000       0x2a lib/lib.a(wait.o)
  .comment       0x0000000000000000       0x2a lib/lib.a(string.o)
+ .comment       0x0000000000000000       0x2a lib/lib.a(malloc.o)
 
 .debug
  *(.debug)
@@ -867,7 +891,7 @@ LOAD lib/lib.a
 .debug_sfnames
  *(.debug_sfnames)
 
-.debug_aranges  0x0000000000000000      0x628
+.debug_aranges  0x0000000000000000      0x648
  *(.debug_aranges)
  .debug_aranges
                 0x0000000000000000       0x20 init/main.o
@@ -917,144 +941,151 @@ LOAD lib/lib.a
                 0x00000000000005e8       0x20 lib/lib.a(wait.o)
  .debug_aranges
                 0x0000000000000608       0x20 lib/lib.a(string.o)
+ .debug_aranges
+                0x0000000000000628       0x20 lib/lib.a(malloc.o)
 
 .debug_pubnames
  *(.debug_pubnames)
 
-.debug_info     0x0000000000000000    0x1762f
+.debug_info     0x0000000000000000    0x17a30
  *(.debug_info .gnu.linkonce.wi.*)
  .debug_info    0x0000000000000000      0x553 init/main.o
- .debug_info    0x0000000000000553     0x51dc kernel/kernel.o
- .debug_info    0x000000000000572f      0xb99 mm/mm.o
- .debug_info    0x00000000000062c8     0xa4a9 fs/fs.o
- .debug_info    0x0000000000010771      0x932 kernel/blk_drv/blk_drv.a(ll_rw_blk.o)
- .debug_info    0x00000000000110a3      0xc9f kernel/blk_drv/blk_drv.a(floppy.o)
- .debug_info    0x0000000000011d42      0xd5f kernel/blk_drv/blk_drv.a(hd.o)
- .debug_info    0x0000000000012aa1      0xad5 kernel/blk_drv/blk_drv.a(ramdisk.o)
- .debug_info    0x0000000000013576      0xacd kernel/chr_drv/chr_drv.a(tty_io.o)
- .debug_info    0x0000000000014043      0xebd kernel/chr_drv/chr_drv.a(console.o)
- .debug_info    0x0000000000014f00      0x85c kernel/chr_drv/chr_drv.a(serial.o)
- .debug_info    0x000000000001575c      0xb47 kernel/chr_drv/chr_drv.a(tty_ioctl.o)
- .debug_info    0x00000000000162a3      0x7b5 kernel/math/math.a(math_emulate.o)
- .debug_info    0x0000000000016a58       0x66 lib/lib.a(ctype.o)
- .debug_info    0x0000000000016abe       0x77 lib/lib.a(_exit.o)
- .debug_info    0x0000000000016b35       0xd0 lib/lib.a(open.o)
- .debug_info    0x0000000000016c05       0x97 lib/lib.a(close.o)
- .debug_info    0x0000000000016c9c       0x36 lib/lib.a(errno.o)
- .debug_info    0x0000000000016cd2       0xc9 lib/lib.a(write.o)
- .debug_info    0x0000000000016d9b       0x97 lib/lib.a(dup.o)
- .debug_info    0x0000000000016e32       0x95 lib/lib.a(setsid.o)
- .debug_info    0x0000000000016ec7      0x11d lib/lib.a(execve.o)
- .debug_info    0x0000000000016fe4       0xed lib/lib.a(wait.o)
- .debug_info    0x00000000000170d1      0x55e lib/lib.a(string.o)
+ .debug_info    0x0000000000000553     0x5323 kernel/kernel.o
+ .debug_info    0x0000000000005876      0xb99 mm/mm.o
+ .debug_info    0x000000000000640f     0xa4a9 fs/fs.o
+ .debug_info    0x00000000000108b8      0x932 kernel/blk_drv/blk_drv.a(ll_rw_blk.o)
+ .debug_info    0x00000000000111ea      0xc9f kernel/blk_drv/blk_drv.a(floppy.o)
+ .debug_info    0x0000000000011e89      0xd5f kernel/blk_drv/blk_drv.a(hd.o)
+ .debug_info    0x0000000000012be8      0xad5 kernel/blk_drv/blk_drv.a(ramdisk.o)
+ .debug_info    0x00000000000136bd      0xacd kernel/chr_drv/chr_drv.a(tty_io.o)
+ .debug_info    0x000000000001418a      0xf52 kernel/chr_drv/chr_drv.a(console.o)
+ .debug_info    0x00000000000150dc      0x85c kernel/chr_drv/chr_drv.a(serial.o)
+ .debug_info    0x0000000000015938      0xb47 kernel/chr_drv/chr_drv.a(tty_ioctl.o)
+ .debug_info    0x000000000001647f      0x7b5 kernel/math/math.a(math_emulate.o)
+ .debug_info    0x0000000000016c34       0x66 lib/lib.a(ctype.o)
+ .debug_info    0x0000000000016c9a       0x77 lib/lib.a(_exit.o)
+ .debug_info    0x0000000000016d11       0xd0 lib/lib.a(open.o)
+ .debug_info    0x0000000000016de1       0x97 lib/lib.a(close.o)
+ .debug_info    0x0000000000016e78       0x36 lib/lib.a(errno.o)
+ .debug_info    0x0000000000016eae       0xc9 lib/lib.a(write.o)
+ .debug_info    0x0000000000016f77       0x97 lib/lib.a(dup.o)
+ .debug_info    0x000000000001700e       0x95 lib/lib.a(setsid.o)
+ .debug_info    0x00000000000170a3      0x11d lib/lib.a(execve.o)
+ .debug_info    0x00000000000171c0       0xed lib/lib.a(wait.o)
+ .debug_info    0x00000000000172ad      0x55e lib/lib.a(string.o)
+ .debug_info    0x000000000001780b      0x225 lib/lib.a(malloc.o)
 
-.debug_abbrev   0x0000000000000000     0x4546
+.debug_abbrev   0x0000000000000000     0x46eb
  *(.debug_abbrev)
  .debug_abbrev  0x0000000000000000      0x1d3 init/main.o
- .debug_abbrev  0x00000000000001d3     0x1070 kernel/kernel.o
- .debug_abbrev  0x0000000000001243      0x20b mm/mm.o
- .debug_abbrev  0x000000000000144e     0x1a50 fs/fs.o
- .debug_abbrev  0x0000000000002e9e      0x169 kernel/blk_drv/blk_drv.a(ll_rw_blk.o)
- .debug_abbrev  0x0000000000003007      0x27d kernel/blk_drv/blk_drv.a(floppy.o)
- .debug_abbrev  0x0000000000003284      0x23c kernel/blk_drv/blk_drv.a(hd.o)
- .debug_abbrev  0x00000000000034c0      0x1a8 kernel/blk_drv/blk_drv.a(ramdisk.o)
- .debug_abbrev  0x0000000000003668      0x279 kernel/chr_drv/chr_drv.a(tty_io.o)
- .debug_abbrev  0x00000000000038e1      0x28c kernel/chr_drv/chr_drv.a(console.o)
- .debug_abbrev  0x0000000000003b6d      0x175 kernel/chr_drv/chr_drv.a(serial.o)
- .debug_abbrev  0x0000000000003ce2      0x18d kernel/chr_drv/chr_drv.a(tty_ioctl.o)
- .debug_abbrev  0x0000000000003e6f      0x163 kernel/math/math.a(math_emulate.o)
- .debug_abbrev  0x0000000000003fd2       0x3e lib/lib.a(ctype.o)
- .debug_abbrev  0x0000000000004010       0x51 lib/lib.a(_exit.o)
- .debug_abbrev  0x0000000000004061       0x97 lib/lib.a(open.o)
- .debug_abbrev  0x00000000000040f8       0x75 lib/lib.a(close.o)
- .debug_abbrev  0x000000000000416d       0x2c lib/lib.a(errno.o)
- .debug_abbrev  0x0000000000004199       0xa1 lib/lib.a(write.o)
- .debug_abbrev  0x000000000000423a       0x75 lib/lib.a(dup.o)
- .debug_abbrev  0x00000000000042af       0x73 lib/lib.a(setsid.o)
- .debug_abbrev  0x0000000000004322       0x85 lib/lib.a(execve.o)
- .debug_abbrev  0x00000000000043a7       0xb6 lib/lib.a(wait.o)
- .debug_abbrev  0x000000000000445d       0xe9 lib/lib.a(string.o)
+ .debug_abbrev  0x00000000000001d3     0x10e7 kernel/kernel.o
+ .debug_abbrev  0x00000000000012ba      0x20b mm/mm.o
+ .debug_abbrev  0x00000000000014c5     0x1a50 fs/fs.o
+ .debug_abbrev  0x0000000000002f15      0x169 kernel/blk_drv/blk_drv.a(ll_rw_blk.o)
+ .debug_abbrev  0x000000000000307e      0x27d kernel/blk_drv/blk_drv.a(floppy.o)
+ .debug_abbrev  0x00000000000032fb      0x23c kernel/blk_drv/blk_drv.a(hd.o)
+ .debug_abbrev  0x0000000000003537      0x1a8 kernel/blk_drv/blk_drv.a(ramdisk.o)
+ .debug_abbrev  0x00000000000036df      0x279 kernel/chr_drv/chr_drv.a(tty_io.o)
+ .debug_abbrev  0x0000000000003958      0x2a1 kernel/chr_drv/chr_drv.a(console.o)
+ .debug_abbrev  0x0000000000003bf9      0x175 kernel/chr_drv/chr_drv.a(serial.o)
+ .debug_abbrev  0x0000000000003d6e      0x18d kernel/chr_drv/chr_drv.a(tty_ioctl.o)
+ .debug_abbrev  0x0000000000003efb      0x163 kernel/math/math.a(math_emulate.o)
+ .debug_abbrev  0x000000000000405e       0x3e lib/lib.a(ctype.o)
+ .debug_abbrev  0x000000000000409c       0x51 lib/lib.a(_exit.o)
+ .debug_abbrev  0x00000000000040ed       0x97 lib/lib.a(open.o)
+ .debug_abbrev  0x0000000000004184       0x75 lib/lib.a(close.o)
+ .debug_abbrev  0x00000000000041f9       0x2c lib/lib.a(errno.o)
+ .debug_abbrev  0x0000000000004225       0xa1 lib/lib.a(write.o)
+ .debug_abbrev  0x00000000000042c6       0x75 lib/lib.a(dup.o)
+ .debug_abbrev  0x000000000000433b       0x73 lib/lib.a(setsid.o)
+ .debug_abbrev  0x00000000000043ae       0x85 lib/lib.a(execve.o)
+ .debug_abbrev  0x0000000000004433       0xb6 lib/lib.a(wait.o)
+ .debug_abbrev  0x00000000000044e9       0xe9 lib/lib.a(string.o)
+ .debug_abbrev  0x00000000000045d2      0x119 lib/lib.a(malloc.o)
 
-.debug_line     0x0000000000000000     0x4944
+.debug_line     0x0000000000000000     0x4a64
  *(.debug_line .debug_line.* .debug_line_end)
  .debug_line    0x0000000000000000      0x1a7 init/main.o
- .debug_line    0x00000000000001a7     0x1005 kernel/kernel.o
- .debug_line    0x00000000000011ac      0x2b4 mm/mm.o
- .debug_line    0x0000000000001460     0x1dea fs/fs.o
- .debug_line    0x000000000000324a      0x197 kernel/blk_drv/blk_drv.a(ll_rw_blk.o)
- .debug_line    0x00000000000033e1      0x24c kernel/blk_drv/blk_drv.a(floppy.o)
- .debug_line    0x000000000000362d      0x2bf kernel/blk_drv/blk_drv.a(hd.o)
- .debug_line    0x00000000000038ec      0x160 kernel/blk_drv/blk_drv.a(ramdisk.o)
- .debug_line    0x0000000000003a4c      0x33b kernel/chr_drv/chr_drv.a(tty_io.o)
- .debug_line    0x0000000000003d87      0x3ed kernel/chr_drv/chr_drv.a(console.o)
- .debug_line    0x0000000000004174       0xd9 kernel/chr_drv/chr_drv.a(serial.o)
- .debug_line    0x000000000000424d      0x1db kernel/chr_drv/chr_drv.a(tty_ioctl.o)
- .debug_line    0x0000000000004428       0xe1 kernel/math/math.a(math_emulate.o)
- .debug_line    0x0000000000004509       0x28 lib/lib.a(ctype.o)
- .debug_line    0x0000000000004531       0x39 lib/lib.a(_exit.o)
- .debug_line    0x000000000000456a       0x62 lib/lib.a(open.o)
- .debug_line    0x00000000000045cc       0x5c lib/lib.a(close.o)
- .debug_line    0x0000000000004628       0x28 lib/lib.a(errno.o)
- .debug_line    0x0000000000004650       0x76 lib/lib.a(write.o)
- .debug_line    0x00000000000046c6       0x5a lib/lib.a(dup.o)
- .debug_line    0x0000000000004720       0x77 lib/lib.a(setsid.o)
- .debug_line    0x0000000000004797       0x6d lib/lib.a(execve.o)
- .debug_line    0x0000000000004804       0x7a lib/lib.a(wait.o)
- .debug_line    0x000000000000487e       0xc6 lib/lib.a(string.o)
+ .debug_line    0x00000000000001a7     0x1016 kernel/kernel.o
+ .debug_line    0x00000000000011bd      0x2b4 mm/mm.o
+ .debug_line    0x0000000000001471     0x1dea fs/fs.o
+ .debug_line    0x000000000000325b      0x197 kernel/blk_drv/blk_drv.a(ll_rw_blk.o)
+ .debug_line    0x00000000000033f2      0x24c kernel/blk_drv/blk_drv.a(floppy.o)
+ .debug_line    0x000000000000363e      0x2bf kernel/blk_drv/blk_drv.a(hd.o)
+ .debug_line    0x00000000000038fd      0x160 kernel/blk_drv/blk_drv.a(ramdisk.o)
+ .debug_line    0x0000000000003a5d      0x33b kernel/chr_drv/chr_drv.a(tty_io.o)
+ .debug_line    0x0000000000003d98      0x412 kernel/chr_drv/chr_drv.a(console.o)
+ .debug_line    0x00000000000041aa       0xd9 kernel/chr_drv/chr_drv.a(serial.o)
+ .debug_line    0x0000000000004283      0x1db kernel/chr_drv/chr_drv.a(tty_ioctl.o)
+ .debug_line    0x000000000000445e       0xe1 kernel/math/math.a(math_emulate.o)
+ .debug_line    0x000000000000453f       0x28 lib/lib.a(ctype.o)
+ .debug_line    0x0000000000004567       0x39 lib/lib.a(_exit.o)
+ .debug_line    0x00000000000045a0       0x62 lib/lib.a(open.o)
+ .debug_line    0x0000000000004602       0x5c lib/lib.a(close.o)
+ .debug_line    0x000000000000465e       0x28 lib/lib.a(errno.o)
+ .debug_line    0x0000000000004686       0x76 lib/lib.a(write.o)
+ .debug_line    0x00000000000046fc       0x5a lib/lib.a(dup.o)
+ .debug_line    0x0000000000004756       0x77 lib/lib.a(setsid.o)
+ .debug_line    0x00000000000047cd       0x6d lib/lib.a(execve.o)
+ .debug_line    0x000000000000483a       0x7a lib/lib.a(wait.o)
+ .debug_line    0x00000000000048b4       0xc6 lib/lib.a(string.o)
+ .debug_line    0x000000000000497a       0xea lib/lib.a(malloc.o)
 
 .debug_frame
  *(.debug_frame)
 
-.debug_str      0x0000000000000000     0x2212
+.debug_str      0x0000000000000000     0x22eb
  *(.debug_str)
  .debug_str     0x0000000000000000      0x1bc init/main.o
                                         0x1fb (size before relaxing)
- .debug_str     0x00000000000001bc      0xc1d kernel/kernel.o
-                                       0x249c (size before relaxing)
- .debug_str     0x0000000000000dd9      0x18d mm/mm.o
+ .debug_str     0x00000000000001bc      0xc78 kernel/kernel.o
+                                       0x2523 (size before relaxing)
+ .debug_str     0x0000000000000e34      0x18d mm/mm.o
                                         0x4e8 (size before relaxing)
- .debug_str     0x0000000000000f66      0x88e fs/fs.o
+ .debug_str     0x0000000000000fc1      0x895 fs/fs.o
                                        0x497f (size before relaxing)
- .debug_str     0x00000000000017f4       0xec kernel/blk_drv/blk_drv.a(ll_rw_blk.o)
+ .debug_str     0x0000000000001856       0xec kernel/blk_drv/blk_drv.a(ll_rw_blk.o)
                                         0x48d (size before relaxing)
- .debug_str     0x00000000000018e0      0x1cf kernel/blk_drv/blk_drv.a(floppy.o)
+ .debug_str     0x0000000000001942      0x1cf kernel/blk_drv/blk_drv.a(floppy.o)
                                         0x66f (size before relaxing)
- .debug_str     0x0000000000001aaf      0x15e kernel/blk_drv/blk_drv.a(hd.o)
+ .debug_str     0x0000000000001b11      0x15e kernel/blk_drv/blk_drv.a(hd.o)
                                         0x5e4 (size before relaxing)
- .debug_str     0x0000000000001c0d       0x43 kernel/blk_drv/blk_drv.a(ramdisk.o)
+ .debug_str     0x0000000000001c6f       0x43 kernel/blk_drv/blk_drv.a(ramdisk.o)
                                         0x586 (size before relaxing)
- .debug_str     0x0000000000001c50       0xf7 kernel/chr_drv/chr_drv.a(tty_io.o)
+ .debug_str     0x0000000000001cb2       0xf7 kernel/chr_drv/chr_drv.a(tty_io.o)
                                         0x4df (size before relaxing)
- .debug_str     0x0000000000001d47      0x272 kernel/chr_drv/chr_drv.a(console.o)
-                                        0x66c (size before relaxing)
- .debug_str     0x0000000000001fb9       0x1a kernel/chr_drv/chr_drv.a(serial.o)
+ .debug_str     0x0000000000001da9      0x279 kernel/chr_drv/chr_drv.a(console.o)
+                                        0x67b (size before relaxing)
+ .debug_str     0x0000000000002022       0x1a kernel/chr_drv/chr_drv.a(serial.o)
                                         0x3f8 (size before relaxing)
- .debug_str     0x0000000000001fd3       0x8b kernel/chr_drv/chr_drv.a(tty_ioctl.o)
+ .debug_str     0x000000000000203c       0x8b kernel/chr_drv/chr_drv.a(tty_ioctl.o)
                                         0x4a3 (size before relaxing)
- .debug_str     0x000000000000205e       0x6c kernel/math/math.a(math_emulate.o)
+ .debug_str     0x00000000000020c7       0x6c kernel/math/math.a(math_emulate.o)
                                         0x38e (size before relaxing)
- .debug_str     0x00000000000020ca       0x89 lib/lib.a(ctype.o)
+ .debug_str     0x0000000000002133       0x89 lib/lib.a(ctype.o)
                                          0xb2 (size before relaxing)
- .debug_str     0x0000000000002153        0x8 lib/lib.a(_exit.o)
+ .debug_str     0x00000000000021bc        0x8 lib/lib.a(_exit.o)
                                          0xde (size before relaxing)
  .debug_str     0x0000000000000000        0x8 lib/lib.a(open.o)
                                          0xee (size before relaxing)
- .debug_str     0x000000000000215b        0x8 lib/lib.a(close.o)
+ .debug_str     0x00000000000021c4        0x8 lib/lib.a(close.o)
                                          0xe0 (size before relaxing)
- .debug_str     0x0000000000002163        0x8 lib/lib.a(errno.o)
+ .debug_str     0x00000000000021cc        0x8 lib/lib.a(errno.o)
                                          0x8f (size before relaxing)
  .debug_str     0x0000000000000000        0x8 lib/lib.a(write.o)
                                          0xec (size before relaxing)
- .debug_str     0x000000000000216b        0x6 lib/lib.a(dup.o)
+ .debug_str     0x00000000000021d4        0x6 lib/lib.a(dup.o)
                                          0xd8 (size before relaxing)
- .debug_str     0x0000000000002171        0x9 lib/lib.a(setsid.o)
+ .debug_str     0x00000000000021da        0x9 lib/lib.a(setsid.o)
                                          0xe8 (size before relaxing)
- .debug_str     0x000000000000217a        0x9 lib/lib.a(execve.o)
+ .debug_str     0x00000000000021e3        0x9 lib/lib.a(execve.o)
                                          0xfe (size before relaxing)
- .debug_str     0x0000000000002183       0x11 lib/lib.a(wait.o)
+ .debug_str     0x00000000000021ec       0x11 lib/lib.a(wait.o)
                                          0xfe (size before relaxing)
- .debug_str     0x0000000000002194       0x7e lib/lib.a(string.o)
+ .debug_str     0x00000000000021fd       0x7e lib/lib.a(string.o)
                                         0x143 (size before relaxing)
+ .debug_str     0x000000000000227b       0x70 lib/lib.a(malloc.o)
+                                        0x15e (size before relaxing)
 
 .debug_loc
  *(.debug_loc)

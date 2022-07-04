@@ -86,6 +86,9 @@ static unsigned char mouse_x_overflow;
 static unsigned char mouse_y_overflow;
 static unsigned int mouse_x_position;
 static unsigned int mouse_y_position;
+#define MSG_MOUSE_LEFT 1
+#define MSG_MOUSE_RIGHT 2
+
 
 static void sysbeep(void);
 
@@ -132,13 +135,13 @@ void readmouse(int mousecode){
 			mouse_input_count++;
 			if(mouse_left_down){
 				struct message *msg=malloc(sizeof(message));
-				msg->mid=MSG_MOUSE_CLICK;
+				msg->mid=MSG_MOUSE_LEFT;
 				msg->pid=-1;
 				post_message(msg);
 			}
 			if(mouse_right_down){
 				struct message *msg=malloc(sizeof(message));
-				msg->mid=MSG_MOUSE_CLICK;
+				msg->mid=MSG_MOUSE_RIGHT;
 				msg->pid=-1;
 				post_message(msg);
 			}

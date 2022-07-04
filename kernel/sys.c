@@ -292,6 +292,11 @@ int sys_umask(int mask)
 	return (old);
 }
 
+#define vga_graph_memstart 0xA0000;
+#define vga_graph_memsize 64000
+#define cursor_side 6
+#define vga_width 320
+#define vga_height 200
 int sys_init_graphics()
 {
 	outb(0x05, 0x3CE);
@@ -323,10 +328,40 @@ int sys_init_graphics()
 	outb(0x0D, 0x3D4);
 	outb(0x0, 0x3D5); //将 Start Address 设置为 0xA0000
 	//在图形模式下绘制背景
-	
+	char *p = vga_graph_memstart;
+	int i;
+ 	for( i = 0; i < vga_graph_memsize; i++)
+ 		*p++ = 3; //将背景颜色设置为蓝绿色
     return 0;
 }
-#include<message.h>
+struct object{
+	long x_pos;
+	long y_pos;
+	long width;
+	long height;
+	long color;
+};
+
+
+
+
+int sys_paint(struct object *o)
+{
+int i,j;
+char *p = vga_graph_memstart;
+for(i = o->x_pos - cursor_side; i <= o->x_pos + cursor_side; i++)
+for(j = o->y_pos - cursor_side; j <= o->y_pos + cursor_side; j++)
+ {
+ p = (char *)vga_graph_memstart + j * vga_width + i;
+*p = 12; //鼠标颜色为红色
+ }
+}
+
+#include <message.h>
+
+int sys_timer_creater(){
+	return 0;
+}
 struct message msg_que[1024];
 unsigned int msg_que_fron = NULL, msg_que_rear = NULL;
 void post_message(int type){
@@ -352,48 +387,4 @@ void sys_get_message(struct message *msg) {
 	put_fs_long(tmp.mid,&msg->mid);
 	put_fs_long(current->pid,&msg->pid);
 }
-int sys_timer_create(){
-	return 0;
-}
- //绘制鼠标
-#define vga_graph_memstart 0xA0000;
-#define vga_graph_memsize 64000
-#define cursor_side 6
-#define vga_width 320
-#define vga_height 200
 
-int sys_paintrect(unsigned int x_pos, unsigned int y_pos)
-{
- char *p = vga_graph_memstart;
-int i,j;
- for( i = 0; i < vga_graph_memsize; i++)
- *p++ = 3; //将背景颜色设置为蓝绿色
-
-for(i = x_pos - cursor_side; i <= x_pos + cursor_side; i++)
-for(j = y_pos - cursor_side; j <= y_pos + cursor_side; j++)
- {
- p = (char *)vga_graph_memstart + j * vga_width + i;
-*p = 12; //鼠标颜色为红色
- }
-}
-
-/* #include <sys/stat.h>
-#include <linux/sched.h>
-#include <linux/kernel.h>
-#include <linux/mm.h>
-#include <shm.h>
-#include <linux/mman.h>
-#include <string.h>
-#include <linux/malloc.h>
-#include <asm/system.h> */
-/*
-long sys_mmap(void *start, size_t len, int prot, int flags,
- int fd, off_t off){
-	
- }
- int sys_munmap(void * start, size_t len){
-	return 0;
- }
- int sys_clone(int (*fn)(void *), void *child_stack, int flags, void *arg){
-	return 0;
- }*/
