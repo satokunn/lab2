@@ -149,10 +149,10 @@
 #define __NR_pipe2	89
 #define __NR_sleep	90
 #define __NR_getcwd	91
-#define __NR_mmap   92
-#define __NR_munmap 93
-#define __NR_clone  94
-
+#define __NR_init_graphics   92
+#define __NR_get_message 93
+#define __NR_timer_creater  94
+#define __NR_paintrect 95
 #define _syscall0(type,name) \
 type name(void) \
 { \

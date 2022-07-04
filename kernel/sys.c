@@ -12,6 +12,7 @@
 #include <asm/segment.h>
 #include <sys/times.h>
 #include <sys/utsname.h>
+#include <asm/io.h>
 
 int sys_ftime()
 {
@@ -290,6 +291,92 @@ int sys_umask(int mask)
 	current->umask = mask & 0777;
 	return (old);
 }
+
+int sys_init_graphics()
+{
+	outb(0x05, 0x3CE);
+	outb(0x40, 0x3CF); //设定256色，且取出方式为移动拼装
+	outb(0x06, 0x3CE);
+	outb(0x05, 0x3CF); //设定显存的地址区域，禁止字符模式
+	outb(0x04, 0x3C4);
+	outb(0x08, 0x3C5); //设定将四个显存片连在一起
+
+	outb(0x01, 0x3D4);
+	outb(0x4F, 0x3D5); //设置 End Horizontal Display 为79
+	outb(0x03, 0x3D4);
+	outb(0x82, 0x3D5); //设置 Display Enable Skew 为0
+
+	outb(0x07, 0x3D4);
+	outb(0x1F, 0x3D5); // 设置 Vertical Display End 第8，9位为1，0
+	outb(0x12, 0x3D4);
+	outb(0x8F, 0x3D5); // 设置 Vertical Display End 低7位为0x8F
+	outb(0x17, 0x3D4);
+	outb(0xA3, 0x3D5); // 设置 SLDIV = 1, 将 Scanline clock 除以2
+
+	outb(0x14, 0x3D4);
+	outb(0x40, 0x3D5); //设置 DW = 1
+	outb(0x13, 0x3D4);
+	outb(0x28, 0x3D5); //设置 Offset = 40
+
+	outb(0x0C, 0x3D4);
+	outb(0x0, 0x3D5);
+	outb(0x0D, 0x3D4);
+	outb(0x0, 0x3D5); //将 Start Address 设置为 0xA0000
+	//在图形模式下绘制背景
+	
+    return 0;
+}
+#include<message.h>
+struct message msg_que[1024];
+unsigned int msg_que_fron = NULL, msg_que_rear = NULL;
+void post_message(int type){
+    if (msg_que_rear != msg_que_fron - 1) {
+		struct message msg;
+		msg.mid = type;
+		msg.pid = current->pid;
+		msg_que[msg_que_rear] = msg;
+		msg_que_rear = (msg_que_rear + 1) % 1024;
+	}
+}
+void sys_get_message(struct message *msg) {
+    struct message tmp;
+	if(msg_que_rear == msg_que_fron){
+		put_fs_long(-1,&msg->mid);
+		put_fs_long(-1,&msg->pid);
+		return;
+	}
+	
+	tmp = msg_que[msg_que_fron];
+	msg_que[msg_que_fron].mid = 0;
+	msg_que_fron = (msg_que_fron + 1) % 1024;;
+	put_fs_long(tmp.mid,&msg->mid);
+	put_fs_long(current->pid,&msg->pid);
+}
+int sys_timer_create(){
+	return 0;
+}
+ //绘制鼠标
+#define vga_graph_memstart 0xA0000;
+#define vga_graph_memsize 64000
+#define cursor_side 6
+#define vga_width 320
+#define vga_height 200
+
+int sys_paintrect(unsigned int x_pos, unsigned int y_pos)
+{
+ char *p = vga_graph_memstart;
+int i,j;
+ for( i = 0; i < vga_graph_memsize; i++)
+ *p++ = 3; //将背景颜色设置为蓝绿色
+
+for(i = x_pos - cursor_side; i <= x_pos + cursor_side; i++)
+for(j = y_pos - cursor_side; j <= y_pos + cursor_side; j++)
+ {
+ p = (char *)vga_graph_memstart + j * vga_width + i;
+*p = 12; //鼠标颜色为红色
+ }
+}
+
 /* #include <sys/stat.h>
 #include <linux/sched.h>
 #include <linux/kernel.h>
@@ -299,7 +386,7 @@ int sys_umask(int mask)
 #include <string.h>
 #include <linux/malloc.h>
 #include <asm/system.h> */
-
+/*
 long sys_mmap(void *start, size_t len, int prot, int flags,
  int fd, off_t off){
 	
@@ -309,4 +396,4 @@ long sys_mmap(void *start, size_t len, int prot, int flags,
  }
  int sys_clone(int (*fn)(void *), void *child_stack, int flags, void *arg){
 	return 0;
- }
+ }*/

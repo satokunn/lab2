@@ -114,6 +114,7 @@ static inline void set_origin(void)
 	outb_p(0xff&((origin-video_mem_start)>>1), video_port_val);
 	sti();
 }
+#include <message.h>
 void readmouse(int mousecode){
 	if(mousecode==0xFA){
 		mouse_input_count=1;
@@ -128,7 +129,19 @@ void readmouse(int mousecode){
 			mouse_down_move=(mousecode & 0x20)==0x20;
 			mouse_x_overflow=(mousecode & 0x40)==0x40;
 			mouse_y_overflow=(mousecode & 0x80)==0x80;
-			mousecode++;
+			mouse_input_count++;
+			if(mouse_left_down){
+				struct message *msg=malloc(sizeof(message));
+				msg->mid=MSG_MOUSE_CLICK;
+				msg->pid=-1;
+				post_message(msg);
+			}
+			if(mouse_right_down){
+				struct message *msg=malloc(sizeof(message));
+				msg->mid=MSG_MOUSE_CLICK;
+				msg->pid=-1;
+				post_message(msg);
+			}
 		case 2:
 			if(mouse_left_move)
 				mouse_x_position+=(int)(0xFFFFFF00|mousecode);
@@ -731,6 +744,13 @@ void con_init(void)
 	bottom	= video_num_lines;
 
 	gotoxy(ORIG_X,ORIG_Y);
+	
+	set_trap_gate(0x21,&keyboard_interrupt);
+	outb_p(inb_p(0x21)&0xfd,0x21);
+	a=inb_p(0x61);
+	outb_p(a|0x80,0x61);
+	outb(a,0x61);
+	
 	//设置键盘控制器的核心代码
 	outb_p(0xA8,0x64);
 	outb_p(0xD4,0x64);
@@ -742,11 +762,6 @@ void con_init(void)
 	set_trap_gate(0x2c,&mouse_interrupt);
 	outb_p(inb_p(0x21)&0xFB,0x21);
 	outb_p(inb_p(0xA1)&0xEF,0xA1);
-	set_trap_gate(0x21,&keyboard_interrupt);
-	outb_p(inb_p(0x21)&0xfd,0x21);
-	a=inb_p(0x61);
-	outb_p(a|0x80,0x61);
-	outb(a,0x61);
 }
 /* from bsd-net-2: */
 
