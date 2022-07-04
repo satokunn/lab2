@@ -334,34 +334,56 @@ int sys_init_graphics()
  		*p++ = 3; //将背景颜色设置为蓝绿色
     return 0;
 }
-struct object{
-	long x_pos;
-	long y_pos;
-	long width;
-	long height;
-	long color;
+struct rect {
+    long color;
+    long x;
+    long y;
+    long dx;
+    long dy;
 };
 
-
-
-
-int sys_paint(struct object *o)
+int sys_paint(struct rect * rect)
 {
-int i,j;
-char *p = vga_graph_memstart;
-for(i = o->x_pos - cursor_side; i <= o->x_pos + cursor_side; i++)
-for(j = o->y_pos - cursor_side; j <= o->y_pos + cursor_side; j++)
- {
- p = (char *)vga_graph_memstart + j * vga_width + i;
-*p = 12; //鼠标颜色为红色
- }
+    int i, j;
+    char * p;
+    long color = get_fs_long(&rect->color);
+    long x = get_fs_long(&rect->x);
+    long y = get_fs_long(&rect->y);
+    long dx = get_fs_long(&rect->dx);
+    long dy = get_fs_long(&rect->dy);
+    for (i = x; i < x+dx; ++i) if (0 <= i && i < vga_width)
+        for (j = y; j < y+dy; ++j) if (0 <= j && j < vga_height){
+            p = (char *)vga_graph_memstart + vga_width*j + i;
+            *p = color;
+        }
+    return 0;
 }
+
 
 #include <message.h>
+struct user_timer{
+	long init_jiffies;
+	long jiffies;
+	int type; // 类型为1表示只定义了一次闹钟
+			  // 类型为0表示定义了无数次闹钟
+	int pid; // 哪个进程创建的定时器
+	struct user_timer * next;
+};
 
-int sys_timer_creater(){
+struct user_timer * user_timer_list = NULL;
+
+int sys_timer_creater(long ms, int type)
+{
+	struct user_timer * timer = malloc(sizeof(struct user_timer));
+	long jiffies = ms / 10;
+	timer->jiffies = timer->init_jiffies = jiffies;
+	timer->pid = current->pid;
+	timer->type = type;
+	timer->next = user_timer_list;
+	user_timer_list = timer;
 	return 0;
 }
+
 struct message msg_que[1024];
 unsigned int msg_que_fron = NULL, msg_que_rear = NULL;
 void post_message(int type){

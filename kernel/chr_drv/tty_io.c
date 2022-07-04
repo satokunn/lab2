@@ -47,7 +47,75 @@
 #define O_CRNL(tty)	_O_FLAG((tty),OCRNL)
 #define O_NLRET(tty)	_O_FLAG((tty),ONLRET)
 #define O_LCUC(tty)	_O_FLAG((tty),OLCUC)
+#include <message.h>
+// 鼠标中断处理程序的主体代码（鼠标数据解析）
+static unsigned char mouse_input_count = 0; // 第几个字节
+static unsigned char mouse_left_down; // 左键按下标志
+static unsigned char mouse_right_down; // 右键按下标志
+static unsigned char mouse_center_down; // 中键按下标志
+										// 保留位，总为1
+static unsigned char mouse_x_sign; // x符号标志位
+static unsigned char mouse_y_sign; // y符号标志位
+static unsigned char mouse_x_overflow; // x溢出标志位
+static unsigned char mouse_y_overflow; // y溢出标志位
+static unsigned int mouse_x_position = 0; // 鼠标横向移动
+static unsigned int mouse_y_position = 0; // 鼠标纵向移动
+static unsigned int mouse_z_position = 0; // 鼠标滚轮移动
 
+// #define CK_DEBUG
+void readmouse(int mousecode)
+{
+	if(mousecode == 0xFA)
+	{ // 0xFA是i8042鼠标命令成功相应的ACK字节
+		mouse_input_count = 1;
+		return 0;
+	}
+	switch(mouse_input_count)
+	{
+		case 1: // 处理第一个字节，取出信息
+			mouse_left_down = (mousecode & 0x1) == 0x1;
+			mouse_right_down = (mousecode & 0x2) == 0x2;
+			mouse_center_down = (mousecode & 0x4) == 0x4;
+			mouse_x_sign = (mousecode & 0x10) == 0x10;
+			mouse_y_sign = (mousecode & 0x20) == 0x20;
+			mouse_x_overflow = (mousecode & 0x40) == 0x40;
+			mouse_y_overflow = (mousecode & 0x80) == 0x80;
+			++mouse_input_count;
+			if (mouse_left_down)
+			{
+				
+				post_message(MSG_MOUSE_LEFT_DOWN);
+			}
+			if (mouse_right_down)
+			{
+				
+				post_message(MSG_MOUSE_RIGHT_DOWN);
+			}
+			
+			break;
+		case 2: // 处理第二个字，计算鼠标在x轴上的位置
+			if(mouse_x_sign) // 此时mousecode是8位负数补码表示
+				mouse_x_position += (int)(0xFFFFFF00|mousecode);
+			else
+				mouse_x_position += (int)(mousecode);
+			++mouse_input_count;
+			
+			break;
+		case 3: // 处理第三个字，计算鼠标在y轴上的位置
+			if(mouse_y_sign) // 此时mousecode是8位负数补码表示
+				mouse_y_position += (int)(0xFFFFFF00|mousecode);
+			else
+				mouse_y_position += (int)(mousecode);
+			++mouse_input_count;
+			
+			break;
+		case 4: // 处理第四个字，计算鼠标在z轴上的位置
+			mouse_z_position += (int)(mousecode);
+			++mouse_input_count;
+			
+			break;
+	}
+}
 struct tty_struct tty_table[] = {
 	{
 		{ICRNL,		/* change incoming CR to NL */

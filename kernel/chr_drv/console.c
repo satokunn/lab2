@@ -75,7 +75,7 @@ static unsigned long	state=0;
 static unsigned long	npar,par[NPAR];
 static unsigned long	ques=0;
 static unsigned char	attr=0x07;
-
+/*
 static unsigned char mouse_input_count =0;
 static unsigned char mouse_left_down;
 static unsigned char mouse_right_down;
@@ -87,7 +87,7 @@ static unsigned char mouse_y_overflow;
 static unsigned int mouse_x_position;
 static unsigned int mouse_y_position;
 #define MSG_MOUSE_LEFT 1
-#define MSG_MOUSE_RIGHT 2
+#define MSG_MOUSE_RIGHT 2*/
 
 
 static void sysbeep(void);
@@ -117,60 +117,7 @@ static inline void set_origin(void)
 	outb_p(0xff&((origin-video_mem_start)>>1), video_port_val);
 	sti();
 }
-#include <message.h>
-void readmouse(int mousecode){
-	if(mousecode==0xFA){
-		mouse_input_count=1;
-		return 0;
-	}
-	switch(mouse_input_count){
-		case 1:
-			mouse_left_down=(mousecode & 0x1)==0x1;
-			mouse_right_down=(mousecode & 0x2)==0x2;
-			mouse_md_down=(mousecode & 0x4)==0x4;
-			mouse_left_move=(mousecode & 0x10)==0x10;
-			mouse_down_move=(mousecode & 0x20)==0x20;
-			mouse_x_overflow=(mousecode & 0x40)==0x40;
-			mouse_y_overflow=(mousecode & 0x80)==0x80;
-			mouse_input_count++;
-			if(mouse_left_down){
-				struct message *msg=malloc(sizeof(message));
-				msg->mid=MSG_MOUSE_LEFT;
-				msg->pid=-1;
-				post_message(msg);
-			}
-			if(mouse_right_down){
-				struct message *msg=malloc(sizeof(message));
-				msg->mid=MSG_MOUSE_RIGHT;
-				msg->pid=-1;
-				post_message(msg);
-			}
-		case 2:
-			if(mouse_left_move)
-				mouse_x_position+=(int)(0xFFFFFF00|mousecode);
-			else
-			{
-				mouse_x_position+=mousecode;
-			}
-			if(mouse_x_position<0 | mouse_x_overflow)mouse_x_position=0;
-			mousecode++;
-			break;
-		case 3:
-			if(mouse_down_move)
-				mouse_y_position+=(int)(0xFFFFFF00|mousecode);
-			else
-			{
-				mouse_y_position+=mousecode;
-			}
-			if(mouse_y_position<0 | mouse_y_overflow)mouse_y_position=0;
-			mousecode=1;
-			break;
-		
-			
-	}
-		
 
-}
 static void scrup(void)
 {
 	if (video_type == VIDEO_TYPE_EGAC || video_type == VIDEO_TYPE_EGAM)
