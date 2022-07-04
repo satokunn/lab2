@@ -54,6 +54,7 @@
 #define NPAR 16
 
 extern void keyboard_interrupt(void);
+extern void mouse_interrupt(void); // 声明鼠标中断处理函数
 
 static unsigned char	video_type;		/* Type of display being used	*/
 static unsigned long	video_num_columns;	/* Number of text columns	*/
@@ -685,6 +686,24 @@ void con_init(void)
 	a=inb_p(0x61);
 	outb_p(a|0x80,0x61);
 	outb(a,0x61);
+
+	/* 
+	设置键盘控制器i8042的核心代码
+	0xA8命令:允许鼠标操作
+	0xD4命令:告诉i8042,发往0x60端口的参数数据是发给鼠标的
+	0x60命令:把发往0x60端口的参数写入i8042的控制寄存器
+	鼠标操作时接受中断号为0x2c的鼠标中断
+	*/
+	outb_p(0xA8,0x64); // 允许鼠标操作
+	outb_p(0xD4,0x64); // 接下来给0x60的命令是给鼠标的
+	outb_p(0xF4,0x60); // 设置鼠标，允许鼠标向主机自动发送数据包
+	outb_p(0x60,0x64); // 接下来给0x60的命令是给i842的
+	outb_p(0x47,0x60); // 设置i842寄存器，允许鼠标接口及其中断
+	set_trap_gate(0x2c,&mouse_interrupt); // 注册鼠标中断
+	// 向8259A发送OCW来打开屏蔽
+	outb_p(inb_p(0x21)&0xFB,0x21);
+	outb_p(inb_p(0xA1)&0xEF,0xA1);
+	
 }
 /* from bsd-net-2: */
 
